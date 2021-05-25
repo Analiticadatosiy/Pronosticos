@@ -845,8 +845,8 @@ def HoltWinters(variable):
 #APLICACIÓN
 st.title("Pronósticos motocicletas - Incolmotos Yamaha")
 
-img = Image.open("YAMAHA.png")
-st.sidebar.image(img, width=250)
+#img = Image.open("YAMAHA.png")
+#st.sidebar.image(img, width=250)
 
 status = st.sidebar.radio("Cual es su objetivo", ("Informativo", "Pronosticar"))
 
@@ -896,15 +896,15 @@ if status=="Informativo":
             * **Error medio absoluto (MAE)**: es el promedio de las diferencias absolutas entre los valores reales y los valores pronosticados.
             """
   st.markdown(text) 
-  img_MAE = Image.open("MAE.jpg")
-  st.image(img_MAE, width=200)
+  #img_MAE = Image.open("MAE.jpg")
+  #st.image(img_MAE, width=200)
   
   text = """
             * **Error medio absoluto porcentual (MAPE)**: es el porcentaje promedio de desviación respecto al valor real.\n
                         """
   st.markdown(text)
-  img_MAPE= Image.open("MAPE.jpg")
-  st.image(img_MAPE, width=200)
+  #img_MAPE= Image.open("MAPE.jpg")
+  #st.image(img_MAPE, width=200)
   st.markdown('Sin embargo es importante entender que muchas veces el error puede estar inducido por factores externos que modificaron el valor real, por ejemplo si un mes se pronostica vender 3.000 motocicletas pero no tenemos inventario y sólo vendemos 1.500, impactará mucho el error porque el pronostico se aleja mucho de la realidad.')
 
 

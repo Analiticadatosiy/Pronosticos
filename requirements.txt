@@ -15,4 +15,5 @@ openpyxl
 plotly.express
 python-dateutil
 MonthDelta
+urllib3
 

@@ -79,6 +79,10 @@ def actual_individual(variable):
   dataset2=dataset2.rename(columns={"DESEMPLEO": "Desempleo", "INFLATION": "Inflación", "IEE":'IEC','OIL PRICE':'Precio petróleo', 'DIAS HABILES':'Días hábiles', 'FESTIVOS':'Días festivos'})
   st.write(dataset2.tail(6))  
 
+  col1, col2=st.beta_columns(2)
+  ini=2020
+  year = col1.selectbox('Fecha a estimar (Año)', range(ini, ini+11))
+  month = col2.selectbox('Fecha a estimar (Mes)', range(1, 13))
   DESEMPLEO = st.number_input("Desempleo", format="%.3f")
   INFLATION = st.number_input("Inflación", format="%.3f")
   TRM = st.number_input("Tasa de cambio representativa del mercado (TRM)", format="%.2f")
@@ -111,7 +115,9 @@ def actual_individual(variable):
     #Promedio
     y_hat_prom=(y_hat_RN+y_hat_RF+y_hat_XG)/3
 
-    index=['t futuro']
+    #index=[MES.strftime('%d/%m/%Y')]
+    index=['1/'+str(month)+'/'+str(year)]
+    #index=['t futuro']
     resultados=pd.DataFrame({'Redes Neuronales': np.around(y_hat_RN), 'Random Forest':np.around(y_hat_RF), 'XGBoost':np.around(y_hat_XG), 'Promedio':np.around(y_hat_prom)}, index=index)
     st.write(resultados)
 
@@ -263,6 +269,11 @@ def rezago_yamaha():
   dataset2=dataset2.rename(columns={"DESEMPLEO": "Desempleo", "INFLATION": "Inflación", "IEE":'IEC','OIL PRICE':'Precio petróleo', 'DIAS HABILES':'Días hábiles', 'FESTIVOS':'Días festivos'})
   st.write(dataset2.tail(6))
   
+
+  col1, col2=st.beta_columns(2)
+  ini=2020
+  year = col1.selectbox('Fecha a estimar (Año)', range(ini, ini+11))
+  month = col2.selectbox('Fecha a estimar (Mes)', range(1, 13))
   DESEMPLEO = st.number_input("Desempleo", format="%.3f")
   INFLATION = st.number_input("Inflación", format="%.3f")
   TRM = st.number_input("Tasa de cambio representativa del mercado [TRM]", format="%.3f")
@@ -295,7 +306,7 @@ def rezago_yamaha():
     #Promedio
     y_hat_prom=(y_hat_RN+y_hat_RF+y_hat_XG)/3
     
-    index=['t+12']
+    index=['1/'+str(month)+'/'+str(year)]
     resultados=pd.DataFrame({'Redes Neuronales': np.around(y_hat_RN), 'Random Forest':np.around(y_hat_RF), 'XGBoost':np.around(y_hat_XG), 'Promedio':np.around(y_hat_prom)}, index=index)
 
     st.write(resultados)
@@ -444,6 +455,11 @@ def rezago_mercado():
   dataset2=dataset2.rename(columns={"DESEMPLEO": "Desempleo", "INFLATION": "Inflación", "IEE":'IEC','OIL PRICE':'Precio petróleo', 'DIAS HABILES':'Días hábiles', 'FESTIVOS':'Días festivos'})
   st.write(dataset2.tail(6))
 
+  col1, col2=st.beta_columns(2)
+  ini=2020
+  year = col1.selectbox('Fecha a estimar (Año)', range(ini, ini+11))
+  month = col2.selectbox('Fecha a estimar (Mes)', range(1, 13))
+
   DESEMPLEO = st.number_input("Desempleo (t)", format="%.3f")
   INFLATION = st.number_input("Inflación (t)", format="%.3f")
   TRM = st.number_input("Tasa de cambio representativa del mercado [TRM] (t)", format="%.3f")
@@ -475,7 +491,7 @@ def rezago_mercado():
     #Promedio
     y_hat_prom=(y_hat_RN+y_hat_RF+y_hat_XG)/3
 
-    index=['t+12']
+    index=['1/'+str(month)+'/'+str(year)]
     resultados=pd.DataFrame({'Redes Neuronales': np.around(y_hat_RN), 'Random Forest':np.around(y_hat_RF), 'XGBoost':np.around(y_hat_XG), 'Promedio':np.around(y_hat_prom)}, index=index)
 
     st.write(resultados)
@@ -792,10 +808,10 @@ def HoltWinters(variable):
 
 
     #Gráfica 2
-    ajustados=pd.DataFrame({'Fitted_optimizado': np.around(fitted.fittedvalues).ravel(),'Fitted_sin_optimizar': np.around(fit.fittedvalues).ravel()}, index=df3.index)
+    ajustados=pd.DataFrame({'Ajustado_optimizado': np.around(fitted.fittedvalues).ravel(),'Ajustado_optimizado': np.around(fit.fittedvalues).ravel()}, index=df3.index)
     ajustados_total=pd.concat([df3[anio:], ajustados[anio:]], axis=1)
     ajustados_total=ajustados_total.reset_index()
-    df_melt_fitted = ajustados_total.melt(id_vars='FECHA', value_vars=[data,'Fitted_optimizado','Fitted_sin_optimizar'])
+    df_melt_fitted = ajustados_total.melt(id_vars='FECHA', value_vars=[data,'Ajustado_optimizado','Ajustado_sin_optimizar'])
     px.defaults.width = 1100
     px.defaults.height = 500
     fig = px.line(df_melt_fitted, x='FECHA',y='value', color='variable', labels={"FECHA": "Fecha",  "value": "Runt"})
@@ -804,11 +820,13 @@ def HoltWinters(variable):
     st.write('Aunque en las gráficas se observa el runt desde '+anio+' los modelos de predicción están construidos con datos desde el 2001 en el caso de yamaha y 2005 en el caso de Mercado')
 
 def Holt_Winters():
-  st.subheader("**Otras series de tiempo a pronosticar**")
-  st.write('En esta opción puede pronosticar cualquier serie de tiempo, sin embargo debe tener en cuenta:')
+  st.subheader("**Otra demanda a pronosticar**")
+  st.write('En esta opción puede pronosticar demanda de categorías, modelos, marcas, wholesale, zonas, distribuidores, referencias de productos, etc., dependiendo de su necesidad, sin embargo debe tener en cuenta:')
   text3 = """
-            * Los datos deben ser mensuales
-            * Los datos se deben subir como se muestra en la plantilla, no cambie el formato de fechas
+            * Los datos deben ser mensuales.
+            * Los datos se deben subir como se muestra en la plantilla, no cambie el formato de fechas.
+            * El pronóstico se calcula para una variable, si desea calcular multiples variables debe repetir el proceso para cada una de ellas.
+              **Ejemplo:** si desea pronosticar categoría ON/OFF y SCOOTER, debe diligenciar la plantilla para ON/OFF, ejecutar el proceso y luego repetirlo para SCOOTER.
             * Tenga en cuenta que si usted tiene datos atípicos dentro del histórico es probable que obtenga modelos con errores muy altos y además que reflejen poco la realidad, considere siempre analizar si hubo eventos que condicionaron la demanda y debe modificar algún valor para llevarlo a algo más "normal".
 
             """
@@ -817,11 +835,12 @@ def Holt_Winters():
   plantilla_otros=pd.read_excel('plantilla_otros.xlsx')
   csv = plantilla_otros.to_csv(index=False)
   b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
-  href = f'<a href="data:file/csv;base64,{b64}">Descargue plantilla</a> y una vez diligenciada vuelva a subir a la aplicación (nombre como quiera y agregue la extensión del archivo .csv)'
+  href = f'<a href="data:file/csv;base64,{b64}">Descargue plantilla</a> (nombre como quiera y agregue la extensión del archivo .csv)'
   st.markdown(href, unsafe_allow_html=True)
 
   st.markdown('**Subir plantilla**')
-  st.write(":warning: El archivo que suba debe tener extensión 'xlsx'")
+  st.write(":warning: Una vez diligenciada la plantilla vuelva a subir a la aplicación el archivo con formato 'xlsx' :warning:")
+  #st.write(":warning: El archivo que suba debe tener extensión 'xlsx'")
   data_file=st.file_uploader('Archivo',type=['xlsx'])
   if data_file is not None:
     df_p=pd.read_excel(data_file)  
@@ -956,10 +975,10 @@ def Holt_Winters():
 
 
       #Gráfica 2
-      ajustados=pd.DataFrame({'Fitted_optimizado': np.around(fitted.fittedvalues).ravel(),'Fitted_sin_optimizar': np.around(fit.fittedvalues).ravel()}, index=df_p.index)
+      ajustados=pd.DataFrame({'Ajustado_optimizado': np.around(fitted.fittedvalues).ravel(),'Ajustado_sin_optimizar': np.around(fit.fittedvalues).ravel()}, index=df_p.index)
       ajustados_total=pd.concat([df_p[anio:], ajustados[anio:]], axis=1)
       ajustados_total=ajustados_total.reset_index()
-      df_melt_fitted = ajustados_total.melt(id_vars='Fecha', value_vars=['Demanda','Fitted_optimizado','Fitted_sin_optimizar'])
+      df_melt_fitted = ajustados_total.melt(id_vars='Fecha', value_vars=['Demanda','Ajustado_optimizado','Ajustado_sin_optimizar'])
       px.defaults.width = 1100
       px.defaults.height = 500
       fig = px.line(df_melt_fitted, x='Fecha',y='value', color='variable', labels={"Fecha": "Fecha",  "value": "Demanda"})
@@ -991,21 +1010,21 @@ if status=="Informativo":
   text3 = """
             * Desempleo
             * Inflación
-            * Salario mínimo (SMMLV)
-            * Indice de expectativas del consumidor (IEC) :label:
-            * Indice de condiciones económicas (ICE) :label:
+            * Salario mínimo (SMMLV) + auxilio TTE
+            * Indice de expectativas del consumidor (IEC) *
+            * Indice de condiciones económicas (ICE) *
             * Precio promedio mensual del petroleo (WTI)
             * Tasa representativa del mercado (TRM)
             * Proporción días hábiles y festivos (en el mes)
 
-            :label: Estos índices se utilizan para el cálculo del índice de confianza del consumidor (ICC) de Fedesarrollo
+            *Estos índices se utilizan para el cálculo del índice de confianza del consumidor (ICC) de Fedesarrollo
             """
   st.markdown(text3)    
   st.markdown("\n ## Recomendaciones de uso")
   st.write('Dependiendo de las necesidades del usuario y los datos que tenga disponible, existen tres opciones para la creación de los pronósticos:')
   #st.markdown("### Estos pronósticos se han construido con datos históricos desde 2001, teniendo en cuenta variables macroeconómicas\n\n")
   text2 = """
-            * **Trabajando con los últimos 12 meses (t-12):** en este caso se utilizan los datos tanto de ventas como de las variables macroeconómicas de los últimos 12 meses
+            * **Trabajando con los últimos 12 meses (t-12):** se utilizan los datos tanto de ventas como de las variables macroeconómicas de los últimos 12 meses
               para predecir los próximos 12 meses hacia adelante.
             * **Suponiendo el comportamiento futuro de las variables macroeconómicas:** en este caso se debe ingresar a la aplicación el valor que tomarán las variables
               macroeconomicas en los n meses hacia adelante que se quieran pronosticar.
@@ -1043,7 +1062,7 @@ if status=="Informativo":
 
 else:
   st.markdown("---")
-  opciones1=['Seleccione demanda','Yamaha','Mercado', 'Otra']
+  opciones1=['Seleccione demanda','Yamaha','Mercado', 'Otra demanda']
   opciones2=['Seleccione dinámica','Suponiendo indicadores económicos','Datos reales último año', 'Sólo con el histórico de ventas']
   opciones3=['Seleccione alcance','Predicción de un sólo mes', 'Predicción varios meses']
   # Add a selectbox to the sidebar:
@@ -1081,7 +1100,7 @@ else:
         rezago_mercado_lote()
     elif selectbox2 == 'Sólo con el histórico de ventas':
       HoltWinters('Mercado')
-  elif selectbox1 == "Otra":
+  elif selectbox1 == "Otra demanda":
     Holt_Winters()
   
 st.sidebar.subheader('Creado por:')

@@ -994,7 +994,8 @@ st.title("Pronósticos motocicletas - Incolmotos Yamaha")
 #img = Image.open(get_file_content_as_string("YAMAHA.PNG"))
 #st.sidebar.image(img, width=250)
 st.sidebar.image(
-    "https://raw.githubusercontent.com/Analiticadatosiy/Pronosticos/master/YAMAHA.PNG", width=250
+    "https://raw.githubusercontent.com/Analiticadatosiy/Pronosticos/master/YAMAHA.PNG?token=ATEVFY6JYIBS3BZZKNKD5ADAWVFBY", width=250
+    #"https://raw.githubusercontent.com/Analiticadatosiy/Pronosticos/master/YAMAHA.PNG", width=250
     #"https://rasahq.github.io/rasa-nlu-examples/square-logo.svg", width=100
 )
 
@@ -1049,14 +1050,14 @@ if status=="Informativo":
             """
   st.markdown(text) 
   #img_MAE = Image.open("MAE.jpg")
-  st.image("https://raw.githubusercontent.com/Analiticadatosiy/Pronosticos/master/MAE.JPG", width=200)
+  st.image("https://raw.githubusercontent.com/Analiticadatosiy/Pronosticos/master/MAE.JPG?token=ATEVFY3U2WJFFMHXGNGTU73AWVFF4", width=200)
   
   text = """
             * **Error medio absoluto porcentual (MAPE)**: es el porcentaje promedio de desviación respecto al valor real.\n
                         """
   st.markdown(text)
   #img_MAPE= Image.open("MAPE.jpg")
-  st.image("https://raw.githubusercontent.com/Analiticadatosiy/Pronosticos/master/MAPE.JPG", width=200)
+  st.image("https://raw.githubusercontent.com/Analiticadatosiy/Pronosticos/master/MAPE.JPG?token=ATEVFYZAOBQ5DZK5LAYIKKTAWVFII", width=200)
   st.markdown('Sin embargo, es importante entender que muchas veces el error puede estar inducido por factores externos que condicionan el valor real, por ejemplo si un mes se pronostica vender 3.000 motocicletas pero no tenemos inventario y sólo vendemos 1.500, impactará mucho al error porque el pronostico se alejó mucho de la realidad, por tanto se sugiere un análisis a los datos usados para el pronóstico y a los valores pronosticados además de los errores calculados. ')
 
 

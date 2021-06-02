@@ -721,12 +721,12 @@ def HoltWinters(variable):
         except:
           continue
         time.sleep(0.1)
-        status_text.write('Calculando')
+        status_text.warning('Calculando')
         if j==(len(cfg_list)-1):
           j=100
         my_bar.progress(j)
         
-    status_text.write('Listo!')
+    status_text.success('Listo!')
     #st.write(best_config)
     t1,d1,s1,p1,b1,r1 = best_config
 
@@ -823,8 +823,8 @@ def Holt_Winters():
   st.subheader("**Otra demanda a pronosticar**")
   st.write('En esta opción puede pronosticar demanda de categorías, modelos, marcas, wholesale, zonas, distribuidores, referencias de productos, etc., dependiendo de su necesidad, sin embargo debe tener en cuenta:')
   text3 = """
-            * Los datos deben ser mensuales.
-            * Los datos se deben subir como se muestra en la plantilla, no cambie el formato de fechas.
+            * Los datos deben ser mensuales y debe tener mínimo 25 meses de información.
+            * Los datos se deben subir como se muestra en la plantilla, **no cambie el formato de fechas ni el nombre de las columnas (Fecha, Demanda)**.
             * El pronóstico se calcula para una variable, si desea calcular multiples variables debe repetir el proceso para cada una de ellas.
               **Ejemplo:** si desea pronosticar categoría ON/OFF y SCOOTER, debe diligenciar la plantilla para ON/OFF, ejecutar el proceso y luego repetirlo para SCOOTER.
             * Tenga en cuenta que si usted tiene datos atípicos dentro del histórico es probable que obtenga modelos con errores muy altos y además que reflejen poco la realidad, considere siempre analizar si hubo eventos que condicionaron la demanda y debe modificar algún valor para llevarlo a algo más "normal".
@@ -844,145 +844,150 @@ def Holt_Winters():
   data_file=st.file_uploader('Archivo',type=['xlsx'])
   if data_file is not None:
     df_p=pd.read_excel(data_file)  
-    st.write('Por favor, ingrese cuantos meses hacia adelante desea estimar la demanda')
-    MES = st.number_input("Meses",value=12)
-    MES=int(MES)
+    if len(df_p)>=25:
+      st.write('Por favor, ingrese cuantos meses hacia adelante desea estimar la demanda')
+      MES = st.number_input("Meses",value=12)
+      MES=int(MES)
 
-    df_p.set_index('Fecha', inplace=True)
-    df_p.index.freq = 'MS'
-    df_p=df_p.dropna()
-    cfg_list = exp_smoothing_configs(seasonal=[12]) #[0,6,12]
+      df_p.set_index('Fecha', inplace=True)
+      df_p.index.freq = 'MS'
+      df_p=df_p.dropna()
+      cfg_list = exp_smoothing_configs(seasonal=[12]) #[0,6,12]
 
-    if (st.button('Pronosticar')):
-      train_size = int(len(df_p) * 0.85) #4000
-      test_size = len(df_p) - train_size #1000
-      ts = df_p.iloc[0:train_size].copy()
-      ts_v = df_p.iloc[train_size:len(df_p)].copy()
-      ind = df_p.index[-test_size:]  # this will select last 12 months' indexes
-      #st.write(ind)
-      #st.write(ts_v)
+      if (st.button('Pronosticar')):
+        train_size = int(len(df_p) * 0.85) #4000
+        test_size = len(df_p) - train_size #1000
+        ts = df_p.iloc[0:train_size].copy()
+        ts_v = df_p.iloc[train_size:len(df_p)].copy()
+        ind = df_p.index[-test_size:]  # this will select last 12 months' indexes
+        #st.write(ind)
+        #st.write(ts_v)
 
-      best_RMSE = np.inf
-      best_config = []
-      t1 = d1 = s1 = p1 = b1 = r1 = None
-      mape=[]
-      y_forecast=[]
-      model=()
-      
-      my_bar = st.progress(0)
-      status_text = st.empty()
-      for j in range(len(cfg_list)):
-          try:
-              cg = cfg_list[j]
-              t,d,s,p,b,r = cg
-              # define model
-              if (t == None):
-                  model = HWES(ts, trend=t, seasonal=s, seasonal_periods=p)
-              else:
-                  model = HWES(ts, trend=t, damped=d, seasonal=s, seasonal_periods=p)
-              # fit model
-              model_fit = model.fit(optimized=True, use_boxcox=b, remove_bias=r)
-              y_forecast = model_fit.forecast(test_size)
-              pred_ = pd.Series(data=y_forecast, index=ind)
-              #df_pass_pred = pd.concat([ts_v, pred_.rename('pred_HW')], axis=1)
-              #st.write(df_pass_pred)
-              mape=mean_absolute_percentage_error(ts_v,y_forecast)
-              #rmse = np.sqrt(mean_squared_error(ts_v,y_forecast))
-               
-              if mape < best_RMSE: # lo cambie por MAPE en vez de RMSE
-                  best_RMSE = mape
-                  best_config = cfg_list[j]
-          except:
-            continue
-          time.sleep(0.1)
-          status_text.write('Calculando')
-          if j==(len(cfg_list)-1):
-            j=100
-          my_bar.progress(j)
-          
-      status_text.write('Listo!')
-      #st.write(best_config)
-      t1,d1,s1,p1,b1,r1 = best_config
+        best_RMSE = np.inf
+        best_config = []
+        t1 = d1 = s1 = p1 = b1 = r1 = None
+        mape=[]
+        y_forecast=[]
+        model=()
+        
+        my_bar = st.progress(0)
+        status_text = st.empty()
+        for j in range(len(cfg_list)):
+            try:
+                cg = cfg_list[j]
+                t,d,s,p,b,r = cg
+                # define model
+                if (t == None):
+                    model = HWES(ts, trend=t, seasonal=s, seasonal_periods=p)
+                else:
+                    model = HWES(ts, trend=t, damped=d, seasonal=s, seasonal_periods=p)
+                # fit model
+                model_fit = model.fit(optimized=True, use_boxcox=b, remove_bias=r)
+                y_forecast = model_fit.forecast(test_size)
+                pred_ = pd.Series(data=y_forecast, index=ind)
+                #df_pass_pred = pd.concat([ts_v, pred_.rename('pred_HW')], axis=1)
+                #st.write(df_pass_pred)
+                mape=mean_absolute_percentage_error(ts_v,y_forecast)
+                #rmse = np.sqrt(mean_squared_error(ts_v,y_forecast))
+                 
+                if mape < best_RMSE: # lo cambie por MAPE en vez de RMSE
+                    best_RMSE = mape
+                    best_config = cfg_list[j]
+            except:
+              continue
+            time.sleep(0.1)
+            status_text.warning('Calculando')
+            if j==(len(cfg_list)-1):
+              j=100
+            my_bar.progress(j)
+            
+        status_text.success('Listo!')
+        #st.write(best_config)
+        t1,d1,s1,p1,b1,r1 = best_config
 
-      # Entreno el modelo con los parametros hallados (uno esta entrenando con el set de train -hw_model1- para obtener errores y otro con todo 
-      # el dataset para obtener pronosticos -hw-)
-      if t1 == None:
-          hw_model1 = HWES(ts, trend=t1, seasonal=s1, seasonal_periods=p1)
-          hw = HWES(df_p, trend=t1, seasonal=s1, seasonal_periods=p1)
-      else:
-          hw_model1 = HWES(ts, trend=t1, seasonal=s1, seasonal_periods=p1, damped=d1)
-          hw = HWES(df_p, trend=t1, seasonal=s1, seasonal_periods=p1, damped=d1)
-       
-      fit2 = hw_model1.fit(optimized=True, use_boxcox=b1, remove_bias=r1)
-      pred_HW = fit2.predict(start=pd.to_datetime(ts_v.index[0]), end = pd.to_datetime(ts_v.index[len(ts_v)-1]))
-      pred_HW = pd.Series(data=pred_HW, index=ind)
+        
+        # Entreno el modelo con los parametros hallados (uno esta entrenando con el set de train -hw_model1- para obtener errores y otro con todo 
+        # el dataset para obtener pronosticos -hw-)
+        if t1 == None:
+            hw_model1 = HWES(ts, trend=t1, seasonal=s1, seasonal_periods=p1)
+            hw = HWES(df_p, trend=t1, seasonal=s1, seasonal_periods=p1)
+        else:
+            hw_model1 = HWES(ts, trend=t1, seasonal=s1, seasonal_periods=p1, damped=d1)
+            hw = HWES(df_p, trend=t1, seasonal=s1, seasonal_periods=p1, damped=d1)
+         
+        fit2 = hw_model1.fit(optimized=True, use_boxcox=b1, remove_bias=r1)
+        pred_HW = fit2.predict(start=pd.to_datetime(ts_v.index[0]), end = pd.to_datetime(ts_v.index[len(ts_v)-1]))
+        pred_HW = pd.Series(data=pred_HW, index=ind)
 
-       
-      fitted = hw.fit(optimized=True, use_boxcox=b1, remove_bias=r1)
-      y_hat=fitted.forecast(steps=MES)
-      
-      modelo = HWES(ts,seasonal_periods = 12,trend = 'add',seasonal = 'add')
-      fitted_wo = modelo.fit(optimized=True, use_brute=True)
-      pred = fitted_wo.predict(start=pd.to_datetime(ts_v.index[0]), end = pd.to_datetime(ts_v.index[len(ts_v)-1]))
-      pred = pd.Series(data=pred, index=ind)
-      
+         
+        fitted = hw.fit(optimized=True, use_boxcox=b1, remove_bias=r1)
+        y_hat=fitted.forecast(steps=MES)
 
-      model=HWES(df_p,seasonal_periods = 12,trend = 'add',seasonal = 'add')
-      fit=model.fit(optimized=True, use_boxcox=True, remove_bias=True)
-      y_hat2=fit.forecast(steps=MES)
+        
+        modelo = HWES(ts,seasonal_periods = 12,trend = 'add',seasonal = 'add')
+        fitted_wo = modelo.fit(optimized=True, use_brute=True)      
+        pred = fitted_wo.predict(start=pd.to_datetime(ts_v.index[0]), end = pd.to_datetime(ts_v.index[len(ts_v)-1]))
+        pred = pd.Series(data=pred, index=ind)
+        
 
-      tiempo=[]
-      nuevo_index=[]
-      for i in range(0,MES,1):
-        a=df_p.index[len(df_p)-1]+relativedelta(months=+(1+i)) 
-        b=a.strftime('%d/%m/%Y')
-        nuevo_index.append(a)
-        tiempo.append(b)
+        model=HWES(df_p,seasonal_periods = 12,trend = 'add',seasonal = 'add')
+        fit=model.fit(optimized=True, use_boxcox=True, remove_bias=True)
+        y_hat2=fit.forecast(steps=MES)
 
-      st.markdown('**Pronósticos: **')
-      resultados=pd.DataFrame({'Resultados optimizados': np.around(y_hat).ravel(),'Resultados sin optimizar': np.around(y_hat2).ravel()}, index=tiempo)
-      csv = resultados.to_csv(index=False)
-      b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
-      href = f'<a href="data:file/csv;base64,{b64}">aquí</a>'
-      st.markdown('Si desea descargar el pronóstico de click '+href, unsafe_allow_html=True)
-      st.write(resultados)
+        tiempo=[]
+        nuevo_index=[]
+        for i in range(0,MES,1):
+          a=df_p.index[len(df_p)-1]+relativedelta(months=+(1+i)) 
+          b=a.strftime('%d/%m/%Y')
+          nuevo_index.append(a)
+          tiempo.append(b)
 
-      st.write('**Errores**')
-      MAE_Opt="{:.0f}".format(mean_absolute_error(ts_v, pred_HW))
-      MAPE_Opt="{:.2%}".format(mean_absolute_percentage_error(ts_v, pred_HW))
+        st.markdown('**Pronósticos: **')
+        resultados=pd.DataFrame({'Resultados optimizados': np.around(y_hat).ravel(),'Resultados sin optimizar': np.around(y_hat2).ravel()}, index=tiempo)
+        csv = resultados.to_csv(index=False)
+        b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
+        href = f'<a href="data:file/csv;base64,{b64}">aquí</a>'
+        st.markdown('Si desea descargar el pronóstico de click '+href, unsafe_allow_html=True)
+        st.write(resultados)
 
-      MAE_SinOpt="{:.0f}".format(mean_absolute_error(ts_v, pred))
-      MAPE_SinOpt="{:.2%}".format(mean_absolute_percentage_error(ts_v, pred))
+        st.write('**Errores**')
+        MAE_Opt="{:.0f}".format(mean_absolute_error(ts_v, pred_HW))
+        MAPE_Opt="{:.2%}".format(mean_absolute_percentage_error(ts_v, pred_HW))
 
-      errores=pd.DataFrame()
-      errores['Errores']=['MAE','MAPE']
-      errores['Optimizado']=[MAE_Opt,MAPE_Opt]
-      errores['Sin optimizar']=[MAE_SinOpt, MAPE_SinOpt]
-      errores.set_index('Errores',inplace=True)
-      st.write(errores)
+        MAE_SinOpt="{:.0f}".format(mean_absolute_error(ts_v, pred))
+        MAPE_SinOpt="{:.2%}".format(mean_absolute_percentage_error(ts_v, pred))
 
-      #Gráfica 1
-      anio='2015' #para determinar desde que año se va a graficar
-      agrupados=pd.DataFrame({'Optimizado': np.around(y_hat).ravel(),'Sin_optimizar': np.around(y_hat2).ravel()}, index=nuevo_index)
-      total=pd.concat([df_p[anio:], agrupados])
-      total.rename(columns={0: 'Demanda'},inplace=True) #esta variable tiene estacionalidad
-      total=total.reset_index()
-      df_melt = total.melt(id_vars='index', value_vars=['Demanda','Optimizado','Sin_optimizar'])
-      px.defaults.width = 1100
-      px.defaults.height = 500
-      fig = px.line(df_melt, x='index',y='value', color='variable', labels={"index": "Fecha",  "value": "Demanda"})
-      st.plotly_chart(fig)
+        errores=pd.DataFrame()
+        errores['Errores']=['MAE','MAPE']
+        errores['Optimizado']=[MAE_Opt,MAPE_Opt]
+        errores['Sin optimizar']=[MAE_SinOpt, MAPE_SinOpt]
+        errores.set_index('Errores',inplace=True)
+        st.write(errores)
+
+        #Gráfica 1
+        anio='2015' #para determinar desde que año se va a graficar
+        agrupados=pd.DataFrame({'Optimizado': np.around(y_hat).ravel(),'Sin_optimizar': np.around(y_hat2).ravel()}, index=nuevo_index)
+        total=pd.concat([df_p[anio:], agrupados])
+        total.rename(columns={0: 'Demanda'},inplace=True) #esta variable tiene estacionalidad
+        total=total.reset_index()
+        df_melt = total.melt(id_vars='index', value_vars=['Demanda','Optimizado','Sin_optimizar'])
+        px.defaults.width = 1100
+        px.defaults.height = 500
+        fig = px.line(df_melt, x='index',y='value', color='variable', labels={"index": "Fecha",  "value": "Demanda"})
+        st.plotly_chart(fig)
 
 
-      #Gráfica 2
-      ajustados=pd.DataFrame({'Ajustado_optimizado': np.around(fitted.fittedvalues).ravel(),'Ajustado_sin_optimizar': np.around(fit.fittedvalues).ravel()}, index=df_p.index)
-      ajustados_total=pd.concat([df_p[anio:], ajustados[anio:]], axis=1)
-      ajustados_total=ajustados_total.reset_index()
-      df_melt_fitted = ajustados_total.melt(id_vars='Fecha', value_vars=['Demanda','Ajustado_optimizado','Ajustado_sin_optimizar'])
-      px.defaults.width = 1100
-      px.defaults.height = 500
-      fig = px.line(df_melt_fitted, x='Fecha',y='value', color='variable', labels={"Fecha": "Fecha",  "value": "Demanda"})
-      st.plotly_chart(fig)
+        #Gráfica 2
+        ajustados=pd.DataFrame({'Ajustado_optimizado': np.around(fitted.fittedvalues).ravel(),'Ajustado_sin_optimizar': np.around(fit.fittedvalues).ravel()}, index=df_p.index)
+        ajustados_total=pd.concat([df_p[anio:], ajustados[anio:]], axis=1)
+        ajustados_total=ajustados_total.reset_index()
+        df_melt_fitted = ajustados_total.melt(id_vars='Fecha', value_vars=['Demanda','Ajustado_optimizado','Ajustado_sin_optimizar'])
+        px.defaults.width = 1100
+        px.defaults.height = 500
+        fig = px.line(df_melt_fitted, x='Fecha',y='value', color='variable', labels={"Fecha": "Fecha",  "value": "Demanda"})
+        st.plotly_chart(fig)
+    else:
+      st.error('La demanda a pronosticar debe tener como mínimo 25 meses de información histórica')
 
     
 
@@ -999,7 +1004,7 @@ st.sidebar.image(
     #"https://rasahq.github.io/rasa-nlu-examples/square-logo.svg", width=100
 )
 
-status = st.sidebar.radio("Cual es su objetivo", ("Informativo", "Pronosticar"))
+status = st.sidebar.radio("Cual es su objetivo:", ("Informarse", "Pronosticar"))
 
 
 if status=="Informativo":

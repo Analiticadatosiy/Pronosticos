@@ -808,7 +808,7 @@ def HoltWinters(variable):
 
 
     #Gráfica 2
-    ajustados=pd.DataFrame({'Ajustado_optimizado': np.around(fitted.fittedvalues).ravel(),'Ajustado_optimizado': np.around(fit.fittedvalues).ravel()}, index=df3.index)
+    ajustados=pd.DataFrame({'Ajustado_optimizado': np.around(fitted.fittedvalues).ravel(),'Ajustado_sin_optimizar': np.around(fit.fittedvalues).ravel()}, index=df3.index)
     ajustados_total=pd.concat([df3[anio:], ajustados[anio:]], axis=1)
     ajustados_total=ajustados_total.reset_index()
     df_melt_fitted = ajustados_total.melt(id_vars='FECHA', value_vars=[data,'Ajustado_optimizado','Ajustado_sin_optimizar'])

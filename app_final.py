@@ -202,7 +202,7 @@ def actual_lote(variable):
     resultados['Fecha']=resultados.Fecha.apply(lambda x: x.strftime('%d/%m/%Y'))
     resultados.set_index('Fecha',inplace=True)
     #Descargar los resultados
-    csv = resultados.to_csv(index=False)
+    csv = resultados.to_csv(index=True)
     b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
     href = f'<a href="data:file/csv;base64,{b64}">aqui</a>'
     st.markdown('Si desea descargar el pronóstico de click '+href, unsafe_allow_html=True)
@@ -390,7 +390,7 @@ def rezago_yamaha_lote():
     resultados=pd.DataFrame({'Fecha':index_pron,'Redes Neuronales': np.around(y_hat_RN), 'Random Forest':np.around(y_hat_RF), 'XGBoost':np.around(y_hat_XG), 'Promedio':np.around(y_hat_prom)})
     resultados['Fecha']=resultados['Fecha'].apply(lambda x: (x+relativedelta(months=+12)).strftime('%d/%m/%Y'))
     resultados.set_index('Fecha',inplace=True)
-    csv = resultados.to_csv(index=False)
+    csv = resultados.to_csv(index=True)
     b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
     href = f'<a href="data:file/csv;base64,{b64}">aquí</a>'
     st.markdown('Si desea descargar el pronóstico de click '+href, unsafe_allow_html=True)
@@ -575,7 +575,7 @@ def rezago_mercado_lote():
     resultados=pd.DataFrame({'Fecha':index_pron,'Redes Neuronales': np.around(y_hat_RN), 'Random Forest':np.around(y_hat_RF), 'XGBoost':np.around(y_hat_XG), 'Promedio':np.around(y_hat_prom)})
     resultados['Fecha']=resultados['Fecha'].apply(lambda x: (x+relativedelta(months=+12)).strftime('%d/%m/%Y'))
     resultados.set_index('Fecha',inplace=True)
-    csv = resultados.to_csv(index=False)
+    csv = resultados.to_csv(index=True)
     b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
     href = f'<a href="data:file/csv;base64,{b64}">aquí</a>'
     st.markdown('Si desea descargar el pronóstico de click '+href, unsafe_allow_html=True)
@@ -767,7 +767,7 @@ def HoltWinters(variable):
 
     st.markdown('**Pronósticos: **')
     resultados=pd.DataFrame({'Resultados optimizados': np.around(y_hat).ravel(),'Resultados sin optimizar': np.around(y_hat2).ravel()}, index=tiempo)
-    csv = resultados.to_csv(index=False)
+    csv = resultados.to_csv(index=True)
     b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
     href = f'<a href="data:file/csv;base64,{b64}">aquí</a>'
     st.markdown('Si desea descargar el pronóstico de click '+href, unsafe_allow_html=True)
@@ -944,7 +944,7 @@ def Holt_Winters():
 
         st.markdown('**Pronósticos: **')
         resultados=pd.DataFrame({'Resultados optimizados': np.around(y_hat).ravel(),'Resultados sin optimizar': np.around(y_hat2).ravel()}, index=tiempo)
-        csv = resultados.to_csv(index=False)
+        csv = resultados.to_csv(index=True)
         b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
         href = f'<a href="data:file/csv;base64,{b64}">aquí</a>'
         st.markdown('Si desea descargar el pronóstico de click '+href, unsafe_allow_html=True)
@@ -1007,7 +1007,7 @@ st.sidebar.image(
 status = st.sidebar.radio("Cual es su objetivo:", ("Informarse", "Pronosticar"))
 
 
-if status=="Informativo":
+if status=="Informarse":
   st.markdown("---")
   st.write('Esta aplicación se construye con el propósito de soportar las decisiones relacionadas con las proyecciones de motocicletas (MTP - Medium Term Plan), a continuación se detalla la metodología y los datos asociados:')
 
@@ -1015,7 +1015,7 @@ if status=="Informativo":
   st.write('Estos pronósticos se han construido con datos históricos del runt desde 2001, además de otras variables macroeconómicas (en algunas metodologías):')
   text3 = """
             * Desempleo
-            * Inflación
+            * Inflación (% anual calculado por el [banco de la república](https://totoro.banrep.gov.co/analytics/saw.dll?Download&Format=excel2007&Extension=.xls&BypassCache=true&lang=es&NQUser=publico&NQPassword=publico123&path=%2Fshared%2FSeries%20Estad%C3%ADsticas_T%2F1.%20IPC%20base%202018%2F1.2.%20Por%20a%C3%B1o%2F1.2.5.IPC_Serie_variaciones)) 
             * Salario mínimo (SMMLV) + auxilio TTE
             * Indice de expectativas del consumidor (IEC) *
             * Indice de condiciones económicas (ICE) *
@@ -1025,7 +1025,9 @@ if status=="Informativo":
 
             *Estos índices se utilizan para el cálculo del índice de confianza del consumidor (ICC) de Fedesarrollo
             """
-  st.markdown(text3)    
+  st.markdown(text3,unsafe_allow_html=True) 
+  #link = '[Banrep](https://totoro.banrep.gov.co/analytics/saw.dll?Download&Format=excel2007&Extension=.xls&BypassCache=true&lang=es&NQUser=publico&NQPassword=publico123&path=%2Fshared%2FSeries%20Estad%C3%ADsticas_T%2F1.%20IPC%20base%202018%2F1.2.%20Por%20a%C3%B1o%2F1.2.5.IPC_Serie_variaciones)'
+  #st.markdown(link, unsafe_allow_html=True)   
   st.markdown("\n ## Recomendaciones de uso")
   st.write('Dependiendo de las necesidades del usuario y los datos que tenga disponible, existen tres opciones para la creación de los pronósticos:')
   #st.markdown("### Estos pronósticos se han construido con datos históricos desde 2001, teniendo en cuenta variables macroeconómicas\n\n")

@@ -766,11 +766,12 @@ def HoltWinters(variable):
       tiempo.append(b)
 
     st.markdown('**Pronósticos: **')
-    resultados=pd.DataFrame({'Resultados optimizados': np.around(y_hat, decimals==0).ravel(),'Resultados sin optimizar': np.around(y_hat2, decimals==0).ravel()}, index=tiempo)
+    resultados=pd.DataFrame({'Resultados optimizados': np.around(y_hat).ravel(),'Resultados sin optimizar': np.around(y_hat2).ravel()}, index=tiempo)
     csv = resultados.to_csv(index=True)
     b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
     href = f'<a href="data:file/csv;base64,{b64}">aquí</a>'
     st.markdown('Si desea descargar el pronóstico de click '+href, unsafe_allow_html=True)
+    resultados['Resultados optimizados'] = resultados['Resultados optimizados'].astype(int) 
     st.dataframe(resultados)
 
     #Agregar descarga csv

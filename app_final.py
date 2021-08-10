@@ -772,6 +772,7 @@ def HoltWinters(variable):
     href = f'<a href="data:file/csv;base64,{b64}">aquí</a>'
     st.markdown('Si desea descargar el pronóstico de click '+href, unsafe_allow_html=True)
     resultados['Resultados optimizados'] = resultados['Resultados optimizados'].astype(int) 
+    resultados['Resultados sin optimizar'] = resultados['Resultados sin optimizar'].astype(int)
     st.dataframe(resultados)
 
     #Agregar descarga csv

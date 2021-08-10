@@ -771,7 +771,7 @@ def HoltWinters(variable):
     b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
     href = f'<a href="data:file/csv;base64,{b64}">aquí</a>'
     st.markdown('Si desea descargar el pronóstico de click '+href, unsafe_allow_html=True)
-    st.table(resultados)
+    st.dataframe(resultados)
 
     #Agregar descarga csv
     #csv = resultados.to_csv(index=False)
@@ -948,7 +948,7 @@ def Holt_Winters():
         b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
         href = f'<a href="data:file/csv;base64,{b64}">aquí</a>'
         st.markdown('Si desea descargar el pronóstico de click '+href, unsafe_allow_html=True)
-        st.write(resultados)
+        st.dataframe(resultados)
 
         st.write('**Errores**')
         MAE_Opt="{:.0f}".format(mean_absolute_error(ts_v, pred_HW))

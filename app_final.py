@@ -79,7 +79,7 @@ def actual_individual(variable):
   dataset2=dataset2.rename(columns={"DESEMPLEO": "Desempleo", "INFLATION": "Inflación", "IEE":'IEC','OIL PRICE':'Precio petróleo', 'DIAS HABILES':'Días hábiles', 'FESTIVOS':'Días festivos'})
   st.write(dataset2.tail(6))  
 
-  col1, col2=st.beta_columns(2)
+  col1, col2=st.columns(2)
   ini=2020
   year = col1.selectbox('Fecha a estimar (Año)', range(ini, ini+11))
   month = col2.selectbox('Fecha a estimar (Mes)', range(1, 13))
@@ -119,6 +119,7 @@ def actual_individual(variable):
     index=['1/'+str(month)+'/'+str(year)]
     #index=['t futuro']
     resultados=pd.DataFrame({'Redes Neuronales': np.around(y_hat_RN), 'Random Forest':np.around(y_hat_RF), 'XGBoost':np.around(y_hat_XG), 'Promedio':np.around(y_hat_prom)}, index=index)
+    resultados = resultados.astype({'Redes Neuronales':int,'Random Forest':int,'XGBoost':int,'Promedio':int})
     st.write(resultados)
 
     errores_RN = np.load('error_RNN_actual_'+variable+'.npy')
@@ -127,12 +128,12 @@ def actual_individual(variable):
 
     errores=pd.DataFrame()
     errores['Errores']=['MAE','MAPE']
-    errores['Redes Neuronales']=[int(errores_RN[0]), str(round(errores_RN[1]*100,2))+'%']
-    errores['Random Forest']=[int(errores_RF[0]), str(round(errores_RF[1]*100,2))+'%']
-    errores['XGBoost']=[int(errores_XG[0]), str(round(errores_XG[1]*100,2))+'%']
+    errores['Redes Neuronales']=[errores_RN[0], (errores_RN[1])]
+    errores['Random Forest']=[int(errores_RF[0]), errores_RF[1]]
+    errores['XGBoost']=[int(errores_XG[0]), errores_XG[1]]
     errores.set_index('Errores',inplace=True)
-
-    st.write(errores)
+    st.markdown('**Errores**')
+    st.write(errores.T.style.format({'MAE': '{:.0f}','MAPE':"{:.0%}"}))
 
 
 def actual_lote(variable):
@@ -154,11 +155,13 @@ def actual_lote(variable):
   st.write(dataset2.tail(6))
 
   # Cargar plantilla para que usuario descargue
-  plantilla_lote_actual=pd.read_excel('plantilla_lote.xlsx')
-  csv = plantilla_lote_actual.to_csv(index=False)
-  b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
-  href = f'<a href="data:file/csv;base64,{b64}">Descargue plantilla</a> una vez diligenciada vuelva a subir a la aplicación (nombre como quiera y agregue la extensión del archivo .csv)'
-  st.markdown(href, unsafe_allow_html=True)
+  with open("plantilla_lote.xlsx", "rb") as file:
+    btn = st.download_button(
+        label="Descargue plantilla",
+        data=file,
+        file_name="plantilla.xlsx",
+        mime="image/png"
+    )
 
 
   st.markdown('**Subir plantilla**')
@@ -199,15 +202,19 @@ def actual_lote(variable):
 
     st.markdown('**Pronóstico**') 
     resultados=pd.DataFrame({'Fecha':index_pron,'Redes Neuronales': np.around(y_hat_RN), 'Random Forest':np.around(y_hat_RF), 'XGBoost':np.around(y_hat_XG), 'Promedio':np.around(y_hat_prom)})
+    resultados = resultados.astype({'Redes Neuronales':int,'Random Forest':int,'XGBoost':int,'Promedio':int})
     resultados['Fecha']=resultados.Fecha.apply(lambda x: x.strftime('%d/%m/%Y'))
     resultados.set_index('Fecha',inplace=True)
+    
     #Descargar los resultados
-    csv = resultados.to_csv(index=True)
-    b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
-    href = f'<a href="data:file/csv;base64,{b64}">aqui</a>'
-    st.markdown('Si desea descargar el pronóstico de click '+href, unsafe_allow_html=True)
-    #st.write('Si desea descargar la tabla con el pronóstico, de click en el link de la parte inferior')
-
+    resultados.to_excel('pronosticos.xlsx',index=True)
+    with open("pronosticos.xlsx", "rb") as file:
+                btn = st.download_button(
+                    label="Descargar pronosticos",
+                    data=file,
+                    file_name="Pronosticos.xlsx",
+                    mime="image/png"
+                )
    
     st.write(resultados)
 
@@ -217,13 +224,13 @@ def actual_lote(variable):
 
     errores=pd.DataFrame()
     errores['Errores']=['MAE','MAPE']
-    errores['Redes Neuronales']=[int(errores_RN[0]), str(round(errores_RN[1]*100,2))+'%']
-    errores['Random Forest']=[int(errores_RF[0]), str(round(errores_RF[1]*100,2))+'%']
-    errores['XGBoost']=[int(errores_XG[0]), str(round(errores_XG[1]*100,2))+'%']
+    errores['Redes Neuronales']=[errores_RN[0], (errores_RN[1])]
+    errores['Random Forest']=[int(errores_RF[0]), errores_RF[1]]
+    errores['XGBoost']=[int(errores_XG[0]), errores_XG[1]]
     errores.set_index('Errores',inplace=True)
     st.markdown('**Errores**')
+    st.write(errores.T.style.format({'MAE': '{:.0f}','MAPE':"{:.0%}"}))
 
-    st.write(errores)
     
     #Descargar los resultados
     #csv = resultados.to_csv(index=False)
@@ -270,7 +277,7 @@ def rezago_yamaha():
   st.write(dataset2.tail(6))
   
 
-  col1, col2=st.beta_columns(2)
+  col1, col2=st.columns(2)
   ini=2020
   year = col1.selectbox('Fecha a estimar (Año)', range(ini, ini+11))
   month = col2.selectbox('Fecha a estimar (Mes)', range(1, 13))
@@ -308,6 +315,7 @@ def rezago_yamaha():
     
     index=['1/'+str(month)+'/'+str(year)]
     resultados=pd.DataFrame({'Redes Neuronales': np.around(y_hat_RN), 'Random Forest':np.around(y_hat_RF), 'XGBoost':np.around(y_hat_XG), 'Promedio':np.around(y_hat_prom)}, index=index)
+    resultados = resultados.astype({'Redes Neuronales':int,'Random Forest':int,'XGBoost':int,'Promedio':int})
 
     st.write(resultados)
 
@@ -317,12 +325,12 @@ def rezago_yamaha():
 
     errores=pd.DataFrame()
     errores['Errores']=['MAE','MAPE']
-    errores['Redes Neuronales']=[int(errores_RN[0]), str(round(errores_RN[1]*100,2))+'%']
-    errores['Random Forest']=[int(errores_RF[0]), str(round(errores_RF[1]*100,2))+'%']
-    errores['XGBoost']=[int(errores_XG[0]), str(round(errores_XG[1]*100,2))+'%']
+    errores['Redes Neuronales']=[errores_RN[0], (errores_RN[1])]
+    errores['Random Forest']=[int(errores_RF[0]), errores_RF[1]]
+    errores['XGBoost']=[int(errores_XG[0]), errores_XG[1]]
     errores.set_index('Errores',inplace=True)
-
-    st.write(errores)
+    st.markdown('**Errores**')
+    st.write(errores.T.style.format({'MAE': '{:.0f}','MAPE':"{:.0%}"}))
 
     #Para graficar los resultados
     y_hat=resultados.values
@@ -344,11 +352,13 @@ def rezago_yamaha_lote():
   st.write(dataset2.tail(6))
 
   # Cargar plantilla para que usuario descargue
-  plantilla_lote_r_yamaha=pd.read_excel('plantilla_lote_r_yamaha.xlsx')
-  csv = plantilla_lote_r_yamaha.to_csv(index=False)
-  b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
-  href = f'<a href="data:file/csv;base64,{b64}">Descargue plantilla</a> una vez diligenciada vuelva a subir a la aplicación (nombre como quiera y agregue la extensión del archivo .csv)'
-  st.markdown(href, unsafe_allow_html=True)
+  with open("plantilla_lote_r_yamaha.xlsx", "rb") as file:
+    btn = st.download_button(
+        label="Descargue plantilla",
+        data=file,
+        file_name="plantilla.xlsx",
+        mime="image/png"
+    )
 
   st.markdown('**Subir plantilla**')
   st.write(":warning: El archivo que suba debe tener extensión 'xlsx'")
@@ -388,15 +398,20 @@ def rezago_yamaha_lote():
 
     st.write('**Pronóstico**')
     resultados=pd.DataFrame({'Fecha':index_pron,'Redes Neuronales': np.around(y_hat_RN), 'Random Forest':np.around(y_hat_RF), 'XGBoost':np.around(y_hat_XG), 'Promedio':np.around(y_hat_prom)})
+    resultados = resultados.astype({'Redes Neuronales':int,'Random Forest':int,'XGBoost':int,'Promedio':int})
     resultados['Fecha']=resultados['Fecha'].apply(lambda x: (x+relativedelta(months=+12)).strftime('%d/%m/%Y'))
     resultados.set_index('Fecha',inplace=True)
-    csv = resultados.to_csv(index=True)
-    b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
-    href = f'<a href="data:file/csv;base64,{b64}">aquí</a>'
-    st.markdown('Si desea descargar el pronóstico de click '+href, unsafe_allow_html=True)
-    #st.write('Si desea descargar la tabla con el pronóstico, de click en el link de la parte inferior')
+    resultados.to_excel('pronosticos.xlsx',index=True)
+    with open("pronosticos.xlsx", "rb") as file:
+      btn = st.download_button(
+        label="Descargar pronosticos",
+        data=file,
+        file_name="Pronosticos.xlsx",
+        mime="image/png"
+      )
 
     st.write(resultados)
+    #st.write(df.style.format("{:.2}"))
     
     errores_RN = np.load('error_RNN_rez_Yamaha.npy')
     errores_RF = np.load('error_RF_rez_Yamaha.npy')
@@ -404,12 +419,13 @@ def rezago_yamaha_lote():
 
     errores=pd.DataFrame()
     errores['Errores']=['MAE','MAPE']
-    errores['Redes Neuronales']=[int(errores_RN[0]), str(round(errores_RN[1]*100,2))+'%']
-    errores['Random Forest']=[int(errores_RF[0]), str(round(errores_RF[1]*100,2))+'%']
-    errores['XGBoost']=[int(errores_XG[0]), str(round(errores_XG[1]*100,2))+'%']
+    errores['Redes Neuronales']=[errores_RN[0], (errores_RN[1])]
+    errores['Random Forest']=[int(errores_RF[0]), errores_RF[1]]
+    errores['XGBoost']=[int(errores_XG[0]), errores_XG[1]]
     errores.set_index('Errores',inplace=True)
     st.markdown('**Errores**')
-    st.write(errores)
+    st.write(errores.T.style.format({'MAE': '{:.0f}','MAPE':"{:.0%}"}))
+
 
     #Descargar los resultados
 
@@ -455,7 +471,7 @@ def rezago_mercado():
   dataset2=dataset2.rename(columns={"DESEMPLEO": "Desempleo", "INFLATION": "Inflación", "IEE":'IEC','OIL PRICE':'Precio petróleo', 'DIAS HABILES':'Días hábiles', 'FESTIVOS':'Días festivos'})
   st.write(dataset2.tail(6))
 
-  col1, col2=st.beta_columns(2)
+  col1, col2=st.columns(2)
   ini=2020
   year = col1.selectbox('Fecha a estimar (Año)', range(ini, ini+11))
   month = col2.selectbox('Fecha a estimar (Mes)', range(1, 13))
@@ -493,6 +509,7 @@ def rezago_mercado():
 
     index=['1/'+str(month)+'/'+str(year)]
     resultados=pd.DataFrame({'Redes Neuronales': np.around(y_hat_RN), 'Random Forest':np.around(y_hat_RF), 'XGBoost':np.around(y_hat_XG), 'Promedio':np.around(y_hat_prom)}, index=index)
+    resultados = resultados.astype({'Redes Neuronales':int,'Random Forest':int,'XGBoost':int,'Promedio':int})
 
     st.write(resultados)
 
@@ -502,12 +519,12 @@ def rezago_mercado():
 
     errores=pd.DataFrame()
     errores['Errores']=['MAE','MAPE']
-    errores['Redes Neuronales']=[int(errores_RN[0]), str(round(errores_RN[1]*100,2))+'%']
-    errores['Random Forest']=[int(errores_RF[0]), str(round(errores_RF[1]*100,2))+'%']
-    errores['XGBoost']=[int(errores_XG[0]), str(round(errores_XG[1]*100,2))+'%']
+    errores['Redes Neuronales']=[errores_RN[0], (errores_RN[1])]
+    errores['Random Forest']=[int(errores_RF[0]), errores_RF[1]]
+    errores['XGBoost']=[int(errores_XG[0]), errores_XG[1]]
     errores.set_index('Errores',inplace=True)
-
-    st.write(errores)
+    st.markdown('**Errores**')
+    st.write(errores.T.style.format({'MAE': '{:.0f}','MAPE':"{:.0%}"}))
 
     #Para graficar los resultados
     y_hat=resultados.values
@@ -529,11 +546,13 @@ def rezago_mercado_lote():
   st.write(dataset2.tail(6))
 
   # Cargar plantilla para que usuario descargue
-  plantilla_lote_r_mercado=pd.read_excel('plantilla_lote_r_mercado.xlsx')
-  csv = plantilla_lote_r_mercado.to_csv(index=False)
-  b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
-  href = f'<a href="data:file/csv;base64,{b64}">Descargue plantilla</a> una vez diligenciada vuelva a subir a la aplicación (nombre como quiera y agregue la extensión del archivo .csv)'
-  st.markdown(href, unsafe_allow_html=True)
+  with open("plantilla_lote_r_mercado.xlsx", "rb") as file:
+    btn = st.download_button(
+        label="Descargue plantilla",
+        data=file,
+        file_name="plantilla.xlsx",
+        mime="image/png"
+    )
 
   st.markdown('**Subir plantilla**')
   st.write(":warning: El archivo que suba debe tener extensión 'xlsx'")
@@ -573,13 +592,18 @@ def rezago_mercado_lote():
 
     st.write('**Pronóstico**')
     resultados=pd.DataFrame({'Fecha':index_pron,'Redes Neuronales': np.around(y_hat_RN), 'Random Forest':np.around(y_hat_RF), 'XGBoost':np.around(y_hat_XG), 'Promedio':np.around(y_hat_prom)})
+    resultados = resultados.astype({'Redes Neuronales':int,'Random Forest':int,'XGBoost':int,'Promedio':int})
     resultados['Fecha']=resultados['Fecha'].apply(lambda x: (x+relativedelta(months=+12)).strftime('%d/%m/%Y'))
     resultados.set_index('Fecha',inplace=True)
-    csv = resultados.to_csv(index=True)
-    b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
-    href = f'<a href="data:file/csv;base64,{b64}">aquí</a>'
-    st.markdown('Si desea descargar el pronóstico de click '+href, unsafe_allow_html=True)
-    #st.write('Si desea descargar la tabla con el pronóstico, de click en el link de la parte inferior')
+    
+    resultados.to_excel('pronosticos.xlsx',index=True)
+    with open("pronosticos.xlsx", "rb") as file:
+      btn = st.download_button(
+        label="Descargar pronosticos",
+        data=file,
+        file_name="Pronosticos.xlsx",
+        mime="image/png"
+      )
 
     st.write(resultados)
 
@@ -589,12 +613,12 @@ def rezago_mercado_lote():
 
     errores=pd.DataFrame()
     errores['Errores']=['MAE','MAPE']
-    errores['Redes Neuronales']=[int(errores_RN[0]), str(round(errores_RN[1]*100,2))+'%']
-    errores['Random Forest']=[int(errores_RF[0]), str(round(errores_RF[1]*100,2))+'%']
-    errores['XGBoost']=[int(errores_XG[0]), str(round(errores_XG[1]*100,2))+'%']
+    errores['Redes Neuronales']=[errores_RN[0], (errores_RN[1])]
+    errores['Random Forest']=[int(errores_RF[0]), errores_RF[1]]
+    errores['XGBoost']=[int(errores_XG[0]), errores_XG[1]]
     errores.set_index('Errores',inplace=True)
     st.markdown('**Errores**')
-    st.write(errores)
+    st.write(errores.T.style.format({'MAE': '{:.0f}','MAPE':"{:.0%}"}))
 
     #Descargar los resultados
 
@@ -765,12 +789,18 @@ def HoltWinters(variable):
       nuevo_index.append(a)
       tiempo.append(b)
 
-    st.markdown('**Pronósticos: **')
+    st.markdown('**Pronósticos:**')
     resultados=pd.DataFrame({'Resultados optimizados': np.around(y_hat).ravel(),'Resultados sin optimizar': np.around(y_hat2).ravel()}, index=tiempo)
-    csv = resultados.to_csv(index=True)
-    b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
-    href = f'<a href="data:file/csv;base64,{b64}">aquí</a>'
-    st.markdown('Si desea descargar el pronóstico de click '+href, unsafe_allow_html=True)
+    resultados.to_excel('pronosticos.xlsx',index=True)
+    with open("pronosticos.xlsx", "rb") as file:
+      btn = st.download_button(
+        label="Descargar pronosticos",
+        data=file,
+        file_name="Pronosticos.xlsx",
+        mime="image/png"
+      )
+
+    
     resultados['Resultados optimizados'] = resultados['Resultados optimizados'].astype(int) 
     resultados['Resultados sin optimizar'] = resultados['Resultados sin optimizar'].astype(int)
     st.dataframe(resultados)
@@ -794,7 +824,7 @@ def HoltWinters(variable):
     errores['Optimizado']=[MAE_Opt,MAPE_Opt]
     errores['Sin optimizar']=[MAE_SinOpt, MAPE_SinOpt]
     errores.set_index('Errores',inplace=True)
-    st.write(errores)
+    st.write(errores.T)
 
     #Gráfica 1
     anio='2015' #para determinar desde que año se va a graficar
@@ -834,11 +864,13 @@ def Holt_Winters():
             """
   st.markdown(text3)    
   # Cargar plantilla para que usuario descargue
-  plantilla_otros=pd.read_excel('plantilla_otros.xlsx')
-  csv = plantilla_otros.to_csv(index=False)
-  b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
-  href = f'<a href="data:file/csv;base64,{b64}">Descargue plantilla</a> (nombre como quiera y agregue la extensión del archivo .csv)'
-  st.markdown(href, unsafe_allow_html=True)
+  with open("plantilla_otros.xlsx", "rb") as file:
+    btn = st.download_button(
+        label="Descargue plantilla",
+        data=file,
+        file_name="plantilla.xlsx",
+        mime="image/png"
+    )
 
   st.markdown('**Subir plantilla**')
   st.write(":warning: Una vez diligenciada la plantilla vuelva a subir a la aplicación el archivo con formato 'xlsx' :warning:")
@@ -944,13 +976,22 @@ def Holt_Winters():
           nuevo_index.append(a)
           tiempo.append(b)
 
-        st.markdown('**Pronósticos: **')
+        st.markdown('**Pronósticos:**')
+        
         resultados=pd.DataFrame({'Resultados optimizados': np.around(y_hat).ravel(),'Resultados sin optimizar': np.around(y_hat2).ravel()}, index=tiempo)
-        csv = resultados.to_csv(index=True)
-        b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
-        href = f'<a href="data:file/csv;base64,{b64}">aquí</a>'
-        st.markdown('Si desea descargar el pronóstico de click '+href, unsafe_allow_html=True)
-        st.dataframe(resultados)
+        resultados.to_excel('pronosticos.xlsx',index=True)
+        #b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
+        #href = f'<a href="data:file/csv;base64,{b64}">aquí</a>'
+        #st.markdown('Si desea descargar el pronóstico de click '+href, unsafe_allow_html=True)
+        #st.dataframe(resultados)
+
+        with open("pronosticos.xlsx", "rb") as file:
+            btn = st.download_button(
+                label="Descargar pronosticos",
+                data=file,
+                file_name="Pronosticos.xlsx",
+                mime="image/png"
+            )
 
         st.write('**Errores**')
         MAE_Opt="{:.0f}".format(mean_absolute_error(ts_v, pred_HW))
@@ -964,7 +1005,7 @@ def Holt_Winters():
         errores['Optimizado']=[MAE_Opt,MAPE_Opt]
         errores['Sin optimizar']=[MAE_SinOpt, MAPE_SinOpt]
         errores.set_index('Errores',inplace=True)
-        st.write(errores)
+        st.write(errores.T)
 
         #Gráfica 1
         anio='2015' #para determinar desde que año se va a graficar

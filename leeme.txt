@@ -1,0 +1,11 @@
+*Streamlit share: se conecta con el github de analítica (incluso para iniciar sesión)
+*Los datos de inicio de sesion son:
+	analiticadatosiy@gmail.com
+	iy_incolmotos-iy
+ 
+*La carpeta desde que se conecta el git esta en la ruta: C:\Users\naran\OneDrive - YAMAHA MOTOR CO., LTD\Analítica de Datos\Scripts_Aplicaciones\Pronosticos
+*Los comandos de actualización de git son paradas en la carpeta anterior:
+	-git status
+	-git add .
+	-git commit - m "comentario"
+	-git push -u origin master
